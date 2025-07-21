@@ -16,13 +16,10 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-def call_groq_agent(user_input):
+def call_groq_agent(message_history):
     payload = {
         "model": "llama-3.3-70b-versatile",
-        "messages": [
-            {"role": "system", "content": "You are TaskTrek, a helpful AI agent that assists users in solving tasks."},
-            {"role": "user", "content": user_input}
-        ],
+        "messages": message_history,
         "temperature": 0.7
     }
 

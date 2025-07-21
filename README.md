@@ -1,11 +1,12 @@
 # TaskTrek Agent
 
-A simple command-line AI agent powered by Groq's Llama 3.3 model.
+A simple command-line AI agent powered by Groq's Llama 3.3 model with conversation memory.
 
 ## Features
 
-- Interactive chat interface
+- Interactive chat interface with memory
 - Powered by Groq API
+- Remembers conversation context throughout the session
 - Clean command-line experience
 - Environment variable configuration
 
@@ -26,6 +27,10 @@ A simple command-line AI agent powered by Groq's Llama 3.3 model.
 3. **Install dependencies**
    ```bash
    pip install requests python-dotenv
+   ```
+   Or use the requirements file:
+   ```bash
+   pip install -r requirements.txt
    ```
 
 4. **Configure API key**
@@ -54,11 +59,14 @@ A simple command-line AI agent powered by Groq's Llama 3.3 model.
 ## Example
 
 ```
-TaskTrek Agent (Groq - Phase 1)
+TaskTrek Agent (Groq - Phase 2: Memory Enabled)
 Type 'exit' to quit.
 
 Task: Write a Python function to calculate fibonacci numbers
 Agent: Here's a Python function to calculate Fibonacci numbers...
+
+Task: Can you optimize that function?
+Agent: Sure! I can optimize the Fibonacci function I just showed you by using memoization...
 
 Task: exit
 Goodbye!
@@ -67,8 +75,9 @@ Goodbye!
 ## Project Structure
 
 ```
-├── main.py          # Main CLI interface
+├── main.py          # Main CLI interface with memory management
 ├── agent.py         # Groq API integration
+├── memory.py        # Conversation memory handling
 ├── .env            # API key (not in git)
 ├── requirements.txt # Dependencies
 └── README.md       # This file
