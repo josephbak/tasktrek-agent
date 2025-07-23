@@ -1,14 +1,17 @@
 # TaskTrek Agent
 
-A simple command-line AI agent powered by Groq's Llama 3.3 model with conversation memory.
+An intelligent command-line AI agent powered by Groq's Llama 3.3 model with conversation memory and tool integration capabilities.
 
 ## Features
 
-- Interactive chat interface with memory
-- Powered by Groq API
-- Remembers conversation context throughout the session
-- Clean command-line experience
-- Environment variable configuration
+- **Interactive Chat Interface** - Seamless conversation experience with memory persistence
+- **Tool Integration** - Function calling capabilities for enhanced problem-solving
+- **Mathematical Calculations** - Built-in calculator tool for precise arithmetic operations
+- **Conversation Memory** - Maintains context throughout the entire session
+- **Retry Logic** - Robust error handling with automatic retry mechanisms
+- **Real-time Tool Monitoring** - Visual indicators showing when tools vs. LLM responses are used
+- **Clean Architecture** - Modular design with separated concerns for maintainability
+- **Secure Configuration** - Environment variable-based API key management
 
 ## Setup
 
@@ -56,38 +59,92 @@ A simple command-line AI agent powered by Groq's Llama 3.3 model with conversati
    - Type your tasks or questions
    - Type `exit` or `quit` to stop
 
-## Example
+## Example Usage
 
+### Mathematical Calculations with Tools
 ```
-TaskTrek Agent (Groq - Phase 2: Memory Enabled)
+TaskTrek Agent (Groq - Phase 3: Tool Integration)
 Type 'exit' to quit.
 
-Task: Write a Python function to calculate fibonacci numbers
-Agent: Here's a Python function to calculate Fibonacci numbers...
+Task: What is (8*7) + (2 ** 5)?
+[TOOL] Using 1 tool(s):
+[TOOL] → calculate({"expression": "(8*7) + (2 ** 5)"})
+[TOOL] ← calculate result: 88
+Agent: The result is 88.
 
-Task: Can you optimize that function?
-Agent: Sure! I can optimize the Fibonacci function I just showed you by using memoization...
+Task: Can you explain how you calculated that?
+[LLM] Responding directly without tools
+Agent: I used the calculate tool to evaluate the expression (8*7) + (2 ** 5). 
+First, 8*7 = 56, then 2**5 = 32, and finally 56 + 32 = 88.
+```
+
+### General Conversation
+```
+Task: Hello, what can you help me with?
+[LLM] Responding directly without tools
+Agent: Hello! I'm TaskTrek, an AI assistant that can help you with various tasks...
 
 Task: exit
 Goodbye!
 ```
 
-## Project Structure
+## Architecture
+
+TaskTrek follows a clean, modular architecture with separated concerns:
 
 ```
-├── main.py          # Main CLI interface with memory management
-├── agent.py         # Groq API integration
-├── memory.py        # Conversation memory handling
-├── .env            # API key (not in git)
-├── requirements.txt # Dependencies
-└── README.md       # This file
+├── main.py          # Entry point - environment setup and chat loop
+├── agent.py         # TaskTrekAgent class - manages chat flow, tool calling, memory, retries
+├── memory.py        # Memory class - conversation context management
+├── tools.py         # Tool system - function schemas, implementations, and dispatch logic
+├── .env            # API key configuration (excluded from git)
+├── requirements.txt # Python dependencies
+└── README.md       # Documentation
 ```
+
+### Component Responsibilities
+
+- **main.py**: Application entry point, initializes agent and manages user interaction loop
+- **agent.py**: Core agent logic with function calling, memory management, and error handling
+- **memory.py**: Conversation history storage and retrieval
+- **tools.py**: Tool definitions, implementations, and execution dispatch
+
+## Available Tools
+
+### Calculator Tool
+- **Function**: `calculate(expression)`
+- **Purpose**: Safely evaluates mathematical expressions
+- **Supported Operations**: `+`, `-`, `*`, `/`, `**`, `()`, `abs()`, `pow()`, `round()`
+- **Security**: Uses restricted `eval()` environment to prevent code injection
+
+### Adding New Tools
+To extend TaskTrek with additional tools:
+
+1. Add function definition to `function_defs` in `tools.py`
+2. Implement the tool function
+3. Add dispatch logic to `handle_tool_call()`
+
+## Monitoring
+
+TaskTrek provides real-time feedback on its decision-making process:
+
+- `[TOOL]` - Indicates when and which tools are being used
+- `[LLM]` - Shows when the agent responds directly without tools
+- Tool arguments and results are displayed for transparency
 
 ## Requirements
 
 - Python 3.7+
 - Groq API key (free tier available)
-- Internet connection
+- Internet connection for API calls
+
+## Development
+
+The codebase follows clean architecture principles with:
+- Separation of concerns across modules
+- Dependency injection for testability
+- Error handling with retry mechanisms
+- Extensible tool system
 
 ## License
 
