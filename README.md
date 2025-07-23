@@ -101,6 +101,28 @@ Goodbye!
 
 ## Architecture
 
+### Data Flow
+```
+[User Query] ──▶ [Memory Storage] ──▶ [Agent Processing]
+                                           │
+                                           ▼
+                                    [Tool Decision]
+                                           │
+                              ┌────────────┴────────────┐
+                              ▼                         ▼
+                        [Use Tools]              [Direct LLM]
+                              │                         │
+                              ▼                         │
+                      [Tool Execution]                  │
+                              │                         │
+                              └─────────┬───────────────┘
+                                        ▼
+                                 [Final Response]
+                                        │
+                                        ▼
+                                [Memory Update]
+```
+
 TaskTrek follows a clean, modular architecture with separated concerns:
 
 ```
