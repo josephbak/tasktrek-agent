@@ -7,6 +7,7 @@ An intelligent command-line AI agent powered by Groq's Llama 3.3 model with conv
 - **Interactive Chat Interface** - Seamless conversation experience with memory persistence
 - **Tool Integration** - Function calling capabilities for enhanced problem-solving
 - **Mathematical Calculations** - Built-in calculator tool for precise arithmetic operations
+- **Date/Time Operations** - Current time retrieval and date calculations
 - **Conversation Memory** - Maintains context throughout the entire session
 - **Retry Logic** - Robust error handling with automatic retry mechanisms
 - **Real-time Tool Monitoring** - Visual indicators showing when tools vs. LLM responses are used
@@ -61,7 +62,7 @@ An intelligent command-line AI agent powered by Groq's Llama 3.3 model with conv
 
 ## Example Usage
 
-### Mathematical Calculations with Tools
+### Mathematical Calculations
 ```
 TaskTrek Agent (Groq - Phase 3: Tool Integration)
 Type 'exit' to quit.
@@ -71,11 +72,21 @@ Task: What is (8*7) + (2 ** 5)?
 [TOOL] → calculate({"expression": "(8*7) + (2 ** 5)"})
 [TOOL] ← calculate result: 88
 Agent: The result is 88.
+```
 
-Task: Can you explain how you calculated that?
-[LLM] Responding directly without tools
-Agent: I used the calculate tool to evaluate the expression (8*7) + (2 ** 5). 
-First, 8*7 = 56, then 2**5 = 32, and finally 56 + 32 = 88.
+### Date/Time Operations
+```
+Task: What time is it?
+[TOOL] Using 1 tool(s):
+[TOOL] → get_current_time({})
+[TOOL] ← get_current_time result: 2025-01-23 14:30:45 (Thursday)
+Agent: It's currently 2:30 PM on Thursday, January 23rd, 2025.
+
+Task: How many days between 2025-01-01 and 2025-12-31?
+[TOOL] Using 1 tool(s):
+[TOOL] → days_between({"date1": "2025-01-01", "date2": "2025-12-31"})
+[TOOL] ← days_between result: 364 days between 2025-01-01 and 2025-12-31
+Agent: There are 364 days between January 1st and December 31st, 2025.
 ```
 
 ### General Conversation
@@ -111,11 +122,22 @@ TaskTrek follows a clean, modular architecture with separated concerns:
 
 ## Available Tools
 
-### Calculator Tool
+### Mathematical Tool
 - **Function**: `calculate(expression)`
 - **Purpose**: Safely evaluates mathematical expressions
 - **Supported Operations**: `+`, `-`, `*`, `/`, `**`, `()`, `abs()`, `pow()`, `round()`
 - **Security**: Uses restricted `eval()` environment to prevent code injection
+
+### Date/Time Tools
+- **Function**: `get_current_time()`
+- **Purpose**: Returns current date and time
+- **Format**: `YYYY-MM-DD HH:MM:SS (Day)`
+- **Example**: `2025-01-23 14:30:45 (Thursday)`
+
+- **Function**: `days_between(date1, date2)`
+- **Purpose**: Calculates days between two dates
+- **Format**: Both dates in `YYYY-MM-DD` format
+- **Example**: `days_between("2025-01-01", "2025-12-31")` → `365 days between 2025-01-01 and 2025-12-31`
 
 ### Adding New Tools
 To extend TaskTrek with additional tools:
@@ -131,6 +153,7 @@ TaskTrek provides real-time feedback on its decision-making process:
 - `[TOOL]` - Indicates when and which tools are being used
 - `[LLM]` - Shows when the agent responds directly without tools
 - Tool arguments and results are displayed for transparency
+- Intelligent tool selection based on query context (calculations vs. concepts)
 
 ## Requirements
 
