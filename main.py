@@ -7,7 +7,13 @@ def main():
     print("TaskTrek Agent (Groq - Phase 2: Memory Enabled)")
     print("Type 'exit' to quit.\n")
 
-    memory = Memory(system_prompt="You are TaskTrek, a helpful AI agent that assists users in solving tasks.")
+    memory = Memory(system_prompt=(
+        "You are TaskTrek, a helpful agent that can solve problems using reasoning and the tool calculate(expression). "
+        "Use the format: Thought → Action → Observation → Answer. "
+        "If needed, call the tool like this: calculate(12 * 5 + (3 ** 2))."
+    ))
+
+
 
     while True:
         user_input = input("Task: ")
