@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 import requests
 from urllib.parse import quote
+from bs4 import BeautifulSoup
 
 function_defs = [
     {
@@ -262,24 +263,45 @@ def get_weather(city: str) -> str:
         return f"Error getting weather for {city}: {e}"
 
 def url_content(url: str) -> str:
-    """Fetch and summarize webpage content"""
+    """Fetch and summarize webpage content using BeautifulSoup for clean extraction"""
     try:
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         
-        # Basic content extraction (you could enhance this with BeautifulSoup)
-        content = response.text
+        # Parse HTML with BeautifulSoup
+        soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Simple text extraction - remove HTML tags roughly
+        # Remove unwanted elements (scripts, styles, navigation, ads, etc.)
+        for element in soup(['script', 'style', 'nav', 'footer', 'aside', 'header', 'noscript']):
+            element.decompose()
+        
+        # Remove common ad/tracking classes and IDs
+        for element in soup.find_all(attrs={'class': ['ad', 'advertisement', 'sidebar', 'menu', 'navigation']}):
+            element.decompose()
+        
+        # Try to find main content area (prioritize semantic HTML)
+        main_content = (
+            soup.find('article') or 
+            soup.find('main') or 
+            soup.find('div', {'class': ['content', 'main-content', 'post-content']}) or
+            soup.find('body')
+        )
+        
+        if not main_content:
+            return f"Error: Could not find main content in {url}"
+        
+        # Extract clean text with proper spacing
+        text_content = main_content.get_text(separator=' ', strip=True)
+        
+        # Clean up extra whitespace
         import re
-        text_content = re.sub(r'<[^>]+>', '', content)
         text_content = re.sub(r'\s+', ' ', text_content).strip()
         
-        # Return first 500 characters as summary
+        # Return summary
         if len(text_content) > 500:
             return f"Content from {url}: {text_content[:500]}..."
         else:
