@@ -8,6 +8,7 @@ An intelligent command-line AI agent powered by Groq's Llama 3.3 model with conv
 - **Tool Integration** - Function calling capabilities for enhanced problem-solving
 - **Mathematical Calculations** - Built-in calculator tool for precise arithmetic operations
 - **Date/Time Operations** - Current time retrieval and date calculations
+- **Text Processing** - Word, character, and line counting for content analysis
 - **Conversation Memory** - Maintains context throughout the entire session
 - **Retry Logic** - Robust error handling with automatic retry mechanisms
 - **Real-time Tool Monitoring** - Visual indicators showing when tools vs. LLM responses are used
@@ -89,6 +90,21 @@ Task: How many days between 2025-01-01 and 2025-12-31?
 Agent: There are 364 days between January 1st and December 31st, 2025.
 ```
 
+### Text Processing
+```
+Task: How many words are in "Hello world this is a test"?
+[TOOL] Using 1 tool(s):
+[TOOL] → count_words({"text": "Hello world this is a test"})
+[TOOL] ← count_words result: 6 words
+Agent: There are 6 words in that text.
+
+Task: Count characters and lines in "Hello\nWorld"
+[TOOL] Using 1 tool(s):
+[TOOL] → count_characters({"text": "Hello\nWorld"})
+[TOOL] ← count_characters result: 11 characters
+Agent: The text has 11 characters (including the newline).
+```
+
 ### General Conversation
 ```
 Task: Hello, what can you help me with?
@@ -160,6 +176,19 @@ TaskTrek follows a clean, modular architecture with separated concerns:
 - **Purpose**: Calculates days between two dates
 - **Format**: Both dates in `YYYY-MM-DD` format
 - **Example**: `days_between("2025-01-01", "2025-12-31")` → `365 days between 2025-01-01 and 2025-12-31`
+
+### Text Processing Tools
+- **Function**: `count_words(text)`
+- **Purpose**: Count the number of words in text
+- **Example**: `count_words("Hello world")` → `2 words`
+
+- **Function**: `count_characters(text)`
+- **Purpose**: Count the number of characters in text (including spaces)
+- **Example**: `count_characters("Hello world")` → `11 characters`
+
+- **Function**: `count_lines(text)`
+- **Purpose**: Count the number of lines in text
+- **Example**: `count_lines("Line 1\nLine 2")` → `2 lines`
 
 ### Adding New Tools
 To extend TaskTrek with additional tools:

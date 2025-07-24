@@ -51,6 +51,57 @@ function_defs = [
                 "required": ["date1", "date2"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "count_words",
+            "description": "Count the number of words in text",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "type": "string",
+                        "description": "The text to count words in"
+                    }
+                },
+                "required": ["text"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "count_characters",
+            "description": "Count the number of characters in text",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "type": "string",
+                        "description": "The text to count characters in"
+                    }
+                },
+                "required": ["text"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "count_lines",
+            "description": "Count the number of lines in text",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "type": "string",
+                        "description": "The text to count lines in"
+                    }
+                },
+                "required": ["text"]
+            }
+        }
     }
     # Add more tool definitions here
 ]
@@ -86,6 +137,30 @@ def days_between(date1: str, date2: str) -> str:
     except Exception as e:
         return f"Error: {e}. Please use YYYY-MM-DD format (e.g., 2025-01-23)"
 
+def count_words(text: str) -> str:
+    """Count the number of words in text"""
+    try:
+        words = len(text.split())
+        return f"{words} words"
+    except Exception as e:
+        return f"Error counting words: {e}"
+
+def count_characters(text: str) -> str:
+    """Count the number of characters in text"""
+    try:
+        chars = len(text)
+        return f"{chars} characters"
+    except Exception as e:
+        return f"Error counting characters: {e}"
+
+def count_lines(text: str) -> str:
+    """Count the number of lines in text"""
+    try:
+        lines = len(text.splitlines())
+        return f"{lines} lines"
+    except Exception as e:
+        return f"Error counting lines: {e}"
+
 def handle_tool_call(tool_call):
     name = tool_call["function"]["name"]
     args = json.loads(tool_call["function"]["arguments"])
@@ -98,6 +173,15 @@ def handle_tool_call(tool_call):
     
     if name == "days_between":
         return days_between(args["date1"], args["date2"])
+    
+    if name == "count_words":
+        return count_words(args["text"])
+    
+    if name == "count_characters":
+        return count_characters(args["text"])
+    
+    if name == "count_lines":
+        return count_lines(args["text"])
     
     # Add dispatch for more tools here
     return f"Unknown tool: {name}"
