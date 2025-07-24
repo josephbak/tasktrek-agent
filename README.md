@@ -9,6 +9,7 @@ An intelligent command-line AI agent powered by Groq's Llama 3.3 model with conv
 - **Mathematical Calculations** - Built-in calculator tool for precise arithmetic operations
 - **Date/Time Operations** - Current time retrieval and date calculations
 - **Text Processing** - Word, character, and line counting for content analysis
+- **Web Integration** - Search capabilities, weather information, and webpage content extraction
 - **Conversation Memory** - Maintains context throughout the entire session
 - **Retry Logic** - Robust error handling with automatic retry mechanisms
 - **Real-time Tool Monitoring** - Visual indicators showing when tools vs. LLM responses are used
@@ -105,6 +106,21 @@ Task: Count characters and lines in "Hello\nWorld"
 Agent: The text has 11 characters (including the newline).
 ```
 
+### Web Operations
+```
+Task: Search for information about artificial intelligence
+[TOOL] Using 1 tool(s):
+[TOOL] → web_search({"query": "artificial intelligence"})
+[TOOL] ← web_search result: Definition of artificial intelligence: The simulation of human intelligence...
+Agent: Artificial intelligence (AI) refers to the simulation of human intelligence in machines...
+
+Task: What's the weather in Tokyo?
+[TOOL] Using 1 tool(s):
+[TOOL] → get_weather({"city": "Tokyo"})
+[TOOL] ← get_weather result: Weather in Tokyo: Partly cloudy, 18°C (64°F), Humidity: 72%
+Agent: The current weather in Tokyo is partly cloudy with a temperature of 18°C (64°F) and 72% humidity.
+```
+
 ### General Conversation
 ```
 Task: Hello, what can you help me with?
@@ -190,6 +206,22 @@ TaskTrek follows a clean, modular architecture with separated concerns:
 - **Purpose**: Count the number of lines in text
 - **Example**: `count_lines("Line 1\nLine 2")` → `2 lines`
 
+### Web Tools
+- **Function**: `web_search(query)`
+- **Purpose**: Search the web using DuckDuckGo Instant Answer API
+- **Best for**: Definitions, facts, calculations, reference queries
+- **Example**: `web_search("What is Python programming")` → Returns definition and overview
+
+- **Function**: `get_weather(city)`
+- **Purpose**: Get current weather information for any city
+- **API**: wttr.in (free, no API key required)
+- **Example**: `get_weather("London")` → `Weather in London: Clear, 15°C (59°F), Humidity: 65%`
+
+- **Function**: `url_content(url)`
+- **Purpose**: Fetch and summarize webpage content
+- **Returns**: First 500 characters of text content
+- **Example**: `url_content("https://example.com")` → Text summary of the webpage
+
 ### Adding New Tools
 To extend TaskTrek with additional tools:
 
@@ -210,7 +242,8 @@ TaskTrek provides real-time feedback on its decision-making process:
 
 - Python 3.7+
 - Groq API key (free tier available)
-- Internet connection for API calls
+- Internet connection for API calls and web tools
+- No additional API keys required for web tools (uses free public APIs)
 
 ## Development
 

@@ -1,5 +1,7 @@
 import json
 from datetime import datetime
+import requests
+from urllib.parse import quote
 
 function_defs = [
     {
@@ -102,6 +104,57 @@ function_defs = [
                 "required": ["text"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "web_search",
+            "description": "Search the web using DuckDuckGo API",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The search query"
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Get current weather for a city",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "city": {
+                        "type": "string",
+                        "description": "The city name to get weather for"
+                    }
+                },
+                "required": ["city"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "url_content",
+            "description": "Fetch and summarize webpage content",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "The URL to fetch content from"
+                    }
+                },
+                "required": ["url"]
+            }
+        }
     }
     # Add more tool definitions here
 ]
@@ -161,6 +214,80 @@ def count_lines(text: str) -> str:
     except Exception as e:
         return f"Error counting lines: {e}"
 
+def web_search(query: str) -> str:
+    """Search the web using DuckDuckGo API"""
+    try:
+        # Using DuckDuckGo Instant Answer API (free, no API key needed)
+        encoded_query = quote(query)
+        url = f"https://api.duckduckgo.com/?q={encoded_query}&format=json&no_html=1&skip_disambig=1"
+        
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        
+        data = response.json()
+        
+        # Try to get instant answer first
+        if data.get('AbstractText'):
+            return f"Search result for '{query}': {data['AbstractText'][:500]}..."
+        elif data.get('Answer'):
+            return f"Answer for '{query}': {data['Answer']}"
+        elif data.get('Definition'):
+            return f"Definition of '{query}': {data['Definition']}"
+        else:
+            return f"No detailed results found for '{query}'. Try a more specific search."
+            
+    except Exception as e:
+        return f"Error searching web: {e}"
+
+def get_weather(city: str) -> str:
+    """Get current weather for a city"""
+    try:
+        # Using wttr.in API (free, no API key needed)
+        url = f"https://wttr.in/{quote(city)}?format=j1"
+        
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        
+        data = response.json()
+        current = data['current_condition'][0]
+        
+        temp_c = current['temp_C']
+        temp_f = current['temp_F']
+        desc = current['weatherDesc'][0]['value']
+        humidity = current['humidity']
+        
+        return f"Weather in {city}: {desc}, {temp_c}°C ({temp_f}°F), Humidity: {humidity}%"
+        
+    except Exception as e:
+        return f"Error getting weather for {city}: {e}"
+
+def url_content(url: str) -> str:
+    """Fetch and summarize webpage content"""
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        # Basic content extraction (you could enhance this with BeautifulSoup)
+        content = response.text
+        
+        # Simple text extraction - remove HTML tags roughly
+        import re
+        text_content = re.sub(r'<[^>]+>', '', content)
+        text_content = re.sub(r'\s+', ' ', text_content).strip()
+        
+        # Return first 500 characters as summary
+        if len(text_content) > 500:
+            return f"Content from {url}: {text_content[:500]}..."
+        else:
+            return f"Content from {url}: {text_content}"
+            
+    except Exception as e:
+        return f"Error fetching content from {url}: {e}"
+
 def handle_tool_call(tool_call):
     name = tool_call["function"]["name"]
     args = json.loads(tool_call["function"]["arguments"])
@@ -182,6 +309,15 @@ def handle_tool_call(tool_call):
     
     if name == "count_lines":
         return count_lines(args["text"])
+    
+    if name == "web_search":
+        return web_search(args["query"])
+    
+    if name == "get_weather":
+        return get_weather(args["city"])
+    
+    if name == "url_content":
+        return url_content(args["url"])
     
     # Add dispatch for more tools here
     return f"Unknown tool: {name}"
