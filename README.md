@@ -1,15 +1,18 @@
 # TaskTrek Agent
 
-An intelligent command-line AI agent powered by Groq's Llama 3.3 model with conversation memory and tool integration capabilities.
+An intelligent command-line AI agent powered by Groq's Llama 3.3 model with conversation memory, tool integration, and intelligent task planning capabilities.
 
 ## Features
 
 - **Interactive Chat Interface** - Seamless conversation experience with memory persistence
-- **Tool Integration** - Function calling capabilities for enhanced problem-solving
+- **Intelligent Task Planning** - Automatically breaks down complex requests into structured, multi-step plans
+- **Hybrid Planning System** - LLM-based complexity detection with heuristic fallbacks for reliability
+- **Tool Integration** - Function calling capabilities for enhanced problem-solving across 12 specialized tools
 - **Mathematical Calculations** - Built-in calculator tool for precise arithmetic operations
 - **Date/Time Operations** - Current time retrieval and date calculations
 - **Text Processing** - Word, character, and line counting for content analysis
 - **Web Integration** - Search capabilities, weather information, and webpage content extraction
+- **File System Operations** - Directory listing, file reading, and file information retrieval
 - **Conversation Memory** - Maintains context throughout the entire session
 - **Retry Logic** - Robust error handling with automatic retry mechanisms
 - **Real-time Tool Monitoring** - Visual indicators showing when tools vs. LLM responses are used
@@ -121,6 +124,35 @@ Task: What's the weather in Tokyo?
 Agent: The current weather in Tokyo is partly cloudy with a temperature of 18°C (64°F) and 72% humidity.
 ```
 
+### Intelligent Task Planning
+```
+Task: List all Python files and analyze their structure
+[PLAN] Created plan: Analyze Python project structure
+📋 Plan: Analyze Python project structure
+📝 Steps (3):
+   1. List all files in current directory [list_files]
+   2. Filter and identify Python files [null]
+   3. Read and analyze each Python file [read_file]
+
+🔄 Step 1/3: List all files in current directory
+[TOOL] Using 1 tool(s):
+[TOOL] → list_files({"directory": "."})
+[TOOL] ← list_files result: Contents of '.': 📄 main.py (2KB), 📄 agent.py (5KB), 📄 tools.py (8KB)...
+✅ Step 1 complete
+
+🔄 Step 2/3: Filter and identify Python files
+[LLM] Responding directly without tools
+✅ Step 2 complete
+
+🔄 Step 3/3: Read and analyze each Python file
+[TOOL] Using 1 tool(s):
+[TOOL] → read_file({"filename": "main.py"})
+[TOOL] ← read_file result: Content of 'main.py': # main.py...
+✅ Step 3 complete
+
+Agent: Based on the analysis, your Python project has a clean structure with 3 main files...
+```
+
 ### General Conversation
 ```
 Task: Hello, what can you help me with?
@@ -155,11 +187,12 @@ Goodbye!
                                 [Memory Update]
 ```
 
-TaskTrek follows a clean, modular architecture with separated concerns:
+TaskTrek follows a clean, modular architecture with separated concerns and intelligent task planning:
 
 ```
 ├── main.py          # Entry point - environment setup and chat loop
-├── agent.py         # TaskTrekAgent class - manages chat flow, tool calling, memory, retries
+├── agent.py         # TaskTrekAgent class - manages chat flow, planning, tool calling, memory
+├── planner.py       # SmartTaskPlanner class - intelligent task planning and complexity detection
 ├── memory.py        # Memory class - conversation context management
 ├── tools.py         # Tool system - function schemas, implementations, and dispatch logic
 ├── .env            # API key configuration (excluded from git)
@@ -170,7 +203,8 @@ TaskTrek follows a clean, modular architecture with separated concerns:
 ### Component Responsibilities
 
 - **main.py**: Application entry point, initializes agent and manages user interaction loop
-- **agent.py**: Core agent logic with function calling, memory management, and error handling
+- **agent.py**: Core agent logic with planning integration, function calling, memory management, and error handling
+- **planner.py**: Intelligent task planning system with hybrid complexity detection and plan execution
 - **memory.py**: Conversation history storage and retrieval
 - **tools.py**: Tool definitions, implementations, and execution dispatch
 
@@ -229,14 +263,69 @@ To extend TaskTrek with additional tools:
 2. Implement the tool function
 3. Add dispatch logic to `handle_tool_call()`
 
+## Intelligent Planning System
+
+TaskTrek features a sophisticated planning system that automatically determines when complex requests need multi-step execution:
+
+### **Automatic Complexity Detection**
+- **LLM-based analysis**: Uses Groq's Llama model to intelligently assess task complexity
+- **Heuristic fallback**: Reliable backup system using pattern matching and keyword analysis
+- **Dynamic tool discovery**: Automatically stays synchronized with available tools
+
+### **Plan Generation**
+- **Structured breakdown**: Complex tasks are decomposed into clear, sequential steps
+- **Tool optimization**: Each step specifies the optimal tool for execution
+- **Validation system**: Plans are validated for correctness and tool availability
+
+### **Execution Monitoring**
+- **Progress tracking**: Real-time feedback on plan execution progress
+- **Step-by-step visibility**: Clear indication of current step and completion status
+- **Error handling**: Graceful handling of step failures with detailed error reporting
+
+### **Examples of Planning Triggers**
+- **Multi-tool requests**: "Get weather for Tokyo and calculate days until New Year"
+- **Analysis tasks**: "Analyze all Python files in my project"
+- **Research workflows**: "Search for AI trends and create a summary report"
+- **File operations**: "List all files and read the important ones"
+
+## Development Roadmap
+
+### **Current Status: Phase 1 Complete**
+- ✅ Hybrid planning system with LLM + heuristic complexity detection
+- ✅ Structured plan generation and validation
+- ✅ Multi-step task execution with progress tracking
+- ✅ 12 specialized tools across 5 categories
+
+### **Phase 2: ReAct Integration (In Progress)**
+- 🔄 Add ReAct (Reasoning and Acting) pattern to each planned step
+- 🔄 Enhanced step-by-step reasoning visibility
+- 🔄 Improved tool selection with explicit thought processes
+- 🔄 Better error recovery and plan adaptation
+
+### **Phase 3: Advanced Features (Planned)**
+- 📋 Dynamic plan modification based on step results
+- 📋 Learning system for improved complexity detection
+- 📋 Performance optimization and caching
+- 📋 Enhanced debugging and monitoring capabilities
+
 ## Monitoring
 
-TaskTrek provides real-time feedback on its decision-making process:
+TaskTrek provides comprehensive real-time feedback on its decision-making process:
 
+### **Planning Indicators**
+- `[SIMPLE]` - Single-step task execution
+- `[PLAN]` - Multi-step planned task execution
+- `📋 Plan:` - Shows the overall goal and step breakdown
+- `🔄 Step X/Y:` - Current step execution with progress
+
+### **Tool Usage Indicators**
 - `[TOOL]` - Indicates when and which tools are being used
 - `[LLM]` - Shows when the agent responds directly without tools
 - Tool arguments and results are displayed for transparency
-- Intelligent tool selection based on query context (calculations vs. concepts)
+
+### **Debug Commands**
+- Type `debug` to see planning statistics and system performance
+- Intelligent tool selection based on query context and planning analysis
 
 ## Requirements
 

@@ -3,6 +3,8 @@ from datetime import datetime
 import requests
 from urllib.parse import quote
 from bs4 import BeautifulSoup
+import os
+import stat
 
 function_defs = [
     {
@@ -154,6 +156,58 @@ function_defs = [
                     }
                 },
                 "required": ["url"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "list_files",
+            "description": "List files and directories in a given path",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "directory": {
+                        "type": "string",
+                        "description": "The directory path to list (default: current directory)",
+                        "default": "."
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_file",
+            "description": "Read and return contents of a text file",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename": {
+                        "type": "string",
+                        "description": "The path to the file to read"
+                    }
+                },
+                "required": ["filename"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "file_info",
+            "description": "Get file information including size, modified date, and type",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename": {
+                        "type": "string",
+                        "description": "The path to the file to get information about"
+                    }
+                },
+                "required": ["filename"]
             }
         }
     }
@@ -310,6 +364,129 @@ def url_content(url: str) -> str:
     except Exception as e:
         return f"Error fetching content from {url}: {e}"
 
+def list_files(directory: str = ".") -> str:
+    """List files and directories in a given path"""
+    try:
+        # Security: Resolve path and check if it exists
+        abs_path = os.path.abspath(directory)
+        if not os.path.exists(abs_path):
+            return f"Error: Directory '{directory}' does not exist"
+        
+        if not os.path.isdir(abs_path):
+            return f"Error: '{directory}' is not a directory"
+        
+        # Get directory contents
+        items = []
+        for item in sorted(os.listdir(abs_path)):
+            item_path = os.path.join(abs_path, item)
+            if os.path.isdir(item_path):
+                items.append(f"📁 {item}/")
+            else:
+                # Get file size
+                size = os.path.getsize(item_path)
+                if size < 1024:
+                    size_str = f"{size}B"
+                elif size < 1024 * 1024:
+                    size_str = f"{size//1024}KB"
+                else:
+                    size_str = f"{size//(1024*1024)}MB"
+                items.append(f"📄 {item} ({size_str})")
+        
+        if not items:
+            return f"Directory '{directory}' is empty"
+        
+        return f"Contents of '{directory}':\n" + "\n".join(items)
+        
+    except PermissionError:
+        return f"Error: Permission denied accessing '{directory}'"
+    except Exception as e:
+        return f"Error listing files in '{directory}': {e}"
+
+def read_file(filename: str) -> str:
+    """Read and return contents of a text file"""
+    try:
+        # Security: Resolve path and check if it exists
+        abs_path = os.path.abspath(filename)
+        if not os.path.exists(abs_path):
+            return f"Error: File '{filename}' does not exist"
+        
+        if not os.path.isfile(abs_path):
+            return f"Error: '{filename}' is not a file"
+        
+        # Check file size (limit to 10KB for safety)
+        file_size = os.path.getsize(abs_path)
+        if file_size > 10 * 1024:  # 10KB limit
+            return f"Error: File '{filename}' is too large ({file_size} bytes). Maximum size is 10KB."
+        
+        # Try to read as text file
+        with open(abs_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Truncate if too long for display
+        if len(content) > 1000:
+            return f"Content of '{filename}' (first 1000 characters):\n{content[:1000]}..."
+        else:
+            return f"Content of '{filename}':\n{content}"
+            
+    except UnicodeDecodeError:
+        return f"Error: '{filename}' appears to be a binary file, not a text file"
+    except PermissionError:
+        return f"Error: Permission denied reading '{filename}'"
+    except Exception as e:
+        return f"Error reading file '{filename}': {e}"
+
+def file_info(filename: str) -> str:
+    """Get file information including size, modified date, and type"""
+    try:
+        # Security: Resolve path and check if it exists
+        abs_path = os.path.abspath(filename)
+        if not os.path.exists(abs_path):
+            return f"Error: '{filename}' does not exist"
+        
+        # Get file stats
+        file_stat = os.stat(abs_path)
+        
+        # Determine type
+        if os.path.isdir(abs_path):
+            file_type = "Directory"
+        elif os.path.isfile(abs_path):
+            file_type = "File"
+        elif os.path.islink(abs_path):
+            file_type = "Symbolic Link"
+        else:
+            file_type = "Other"
+        
+        # Format size
+        size = file_stat.st_size
+        if size < 1024:
+            size_str = f"{size} bytes"
+        elif size < 1024 * 1024:
+            size_str = f"{size/1024:.1f} KB"
+        elif size < 1024 * 1024 * 1024:
+            size_str = f"{size/(1024*1024):.1f} MB"
+        else:
+            size_str = f"{size/(1024*1024*1024):.1f} GB"
+        
+        # Format dates
+        modified_time = datetime.fromtimestamp(file_stat.st_mtime)
+        modified_str = modified_time.strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Get permissions (Unix-style)
+        permissions = stat.filemode(file_stat.st_mode)
+        
+        info = f"Information for '{filename}':\n"
+        info += f"Type: {file_type}\n"
+        info += f"Size: {size_str}\n"
+        info += f"Modified: {modified_str}\n"
+        info += f"Permissions: {permissions}"
+        
+        return info
+        
+    except PermissionError:
+        return f"Error: Permission denied accessing '{filename}'"
+    except Exception as e:
+        return f"Error getting info for '{filename}': {e}"
+
 def handle_tool_call(tool_call):
     name = tool_call["function"]["name"]
     args = json.loads(tool_call["function"]["arguments"])
@@ -340,6 +517,16 @@ def handle_tool_call(tool_call):
     
     if name == "url_content":
         return url_content(args["url"])
+    
+    if name == "list_files":
+        directory = args.get("directory", ".")
+        return list_files(directory)
+    
+    if name == "read_file":
+        return read_file(args["filename"])
+    
+    if name == "file_info":
+        return file_info(args["filename"])
     
     # Add dispatch for more tools here
     return f"Unknown tool: {name}"

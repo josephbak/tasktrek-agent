@@ -14,6 +14,12 @@ def main():
             print("Goodbye!")
             break
         
+        # Debug commands
+        if user_input.strip().lower() == "debug":
+            stats = agent.planner.get_planning_stats()
+            print(f"Planning Stats: {stats}")
+            continue
+        
         try:
             response = agent.chat(user_input)
             print("Agent:", response, "\n")
