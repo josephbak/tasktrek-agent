@@ -14,7 +14,17 @@ def main():
             print("Goodbye!")
             break
         
-        # Ready for ReAct enhancements
+        # Memory debug commands
+        if user_input.strip().lower() == "memory":
+            stats = agent.memory.get_memory_stats()
+            print(f"Memory Stats: {stats}")
+            continue
+        elif user_input.strip().lower() == "important":
+            summary = agent.memory.get_important_summary()
+            print("Important Messages:")
+            for item in summary:
+                print(f"  {item['reason']}: {item['preview']}")
+            continue
         
         try:
             response = agent.chat(user_input)

@@ -11,7 +11,8 @@ An intelligent command-line AI agent powered by Groq's Llama 3.3 model with conv
 - **Text Processing** - Word, character, and line counting for content analysis
 - **Web Integration** - Search capabilities, weather information, and webpage content extraction
 - **File System Operations** - Directory listing, file reading, and file information retrieval
-- **Conversation Memory** - Maintains context throughout the entire session
+- **Hybrid Memory System** - Efficient memory management with recent and important message preservation
+- **Memory Debug Commands** - Built-in commands to monitor memory usage and important message tracking
 - **Retry Logic** - Robust error handling with automatic retry mechanisms
 - **Real-time Tool Monitoring** - Visual indicators showing when tools vs. LLM responses are used
 - **Clean Architecture** - Modular design with separated concerns for maintainability
@@ -62,6 +63,8 @@ An intelligent command-line AI agent powered by Groq's Llama 3.3 model with conv
 3. **Start chatting**
    - Type your tasks or questions
    - Type `exit` or `quit` to stop
+   - Type `memory` to view memory usage statistics
+   - Type `important` to see what messages are preserved as important
 
 ## Example Usage
 
@@ -281,6 +284,11 @@ TaskTrek provides clear real-time feedback on its decision-making process:
 - `[LLM]` - Shows when the agent responds directly without tools
 - Tool arguments and results are displayed for transparency
 - Intelligent tool selection based on query context and requirements
+
+### **Memory Debug Commands**
+- `memory` - Display current memory usage statistics including recent/important message counts and estimated token usage
+- `important` - Show summary of messages preserved as important with reasons and previews
+- Real-time memory efficiency monitoring to optimize token usage
 
 ## Requirements
 
