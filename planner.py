@@ -29,13 +29,15 @@ class SmartTaskPlanner:
     
     def should_create_plan(self, user_request: str) -> bool:
         """Hybrid approach: LLM decision with heuristic fallback"""
-        try:
-            # Primary: Ask LLM (intelligent but can fail)
-            return self._llm_complexity_check(user_request)
-        except Exception as e:
-            print(f"[PLANNER] LLM complexity check failed: {e}")
-            # Fallback: Simple heuristics (always works)
-            return self._heuristic_complexity_check(user_request)
+        # Start with conservative heuristic-only approach
+        return self._heuristic_complexity_check(user_request)
+        
+        # TODO: Re-enable LLM complexity check after more testing
+        # try:
+        #     return self._llm_complexity_check(user_request)
+        # except Exception as e:
+        #     print(f"[PLANNER] LLM complexity check failed: {e}")
+        #     return self._heuristic_complexity_check(user_request)
     
     def _llm_complexity_check(self, user_request: str) -> bool:
         """LLM-based complexity detection"""
