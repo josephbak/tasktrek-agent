@@ -108,29 +108,24 @@ Examples:
             tool_args = tool_call['function']['arguments']
             print(f"[TOOL] → {tool_name}({tool_args})")
         
-        # Add the assistant message with tool calls to memory (need to add the full message object)
-        self.memory.history.append({
-            "role": "assistant",
-            "content": message.get('content', ''),
-            "tool_calls": tool_calls
-        })
-        
-        # Execute each tool call
+        # Execute each tool call and collect results
+        tool_results = []
         for tool_call in tool_calls:
             result = handle_tool_call(tool_call)
             tool_name = tool_call['function']['name']
             print(f"[TOOL] ← {tool_name} result: {result}")
-            
-            # Add tool result to memory
-            self.memory.history.append({
-                "role": "tool",
-                "tool_call_id": tool_call['id'],
-                "content": result
-            })
+            tool_results.append(f"{tool_name}: {result}")
+        
+        # Create a summary of tool usage for memory
+        tool_summary = f"[TOOL] Used {len(tool_calls)} tool(s): " + "; ".join(tool_results)
         
         # Get final response after tool execution
         final_response = self._call_groq_with_tools()
-        return final_response['choices'][0]['message']['content']
+        final_content = final_response['choices'][0]['message']['content']
+        
+        # Combine tool summary with final response for memory
+        combined_response = f"{tool_summary}\n{final_content}"
+        return combined_response
     
     # Helper methods for future ReAct implementation
     

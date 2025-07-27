@@ -128,3 +128,62 @@ class Memory:
                 "timestamp": msg["timestamp"]
             })
         return summary
+    
+    def save_conversation_to_file(self, filename=None):
+        """Save the entire conversation to a text file"""
+        if filename is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"conversation_{timestamp}.txt"
+        
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write("TaskTrek Agent Conversation Log\n")
+                f.write("=" * 40 + "\n")
+                f.write(f"Session Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+                
+                # Get all messages (recent + important, deduplicated)
+                all_messages = []
+                
+                # Add important messages first (chronologically)
+                for msg in self.important_history:
+                    all_messages.append({
+                        "role": msg["role"],
+                        "content": msg["content"],
+                        "timestamp": msg["timestamp"],
+                        "type": "important"
+                    })
+                
+                # Add recent messages
+                for msg in self.recent_history:
+                    all_messages.append({
+                        "role": msg["role"],
+                        "content": msg["content"],
+                        "timestamp": msg["timestamp"],
+                        "type": "recent"
+                    })
+                
+                # Sort by timestamp and remove duplicates
+                seen_content = set()
+                unique_messages = []
+                for msg in sorted(all_messages, key=lambda x: x["timestamp"]):
+                    content_key = (msg["role"], msg["content"])
+                    if content_key not in seen_content:
+                        seen_content.add(content_key)
+                        unique_messages.append(msg)
+                
+                # Write messages to file
+                for msg in unique_messages:
+                    role_label = "User" if msg["role"] == "user" else "Agent"
+                    f.write(f"{role_label}: {msg['content']}\n")
+                    f.write("-" * 40 + "\n")
+                
+                # Add memory statistics at the end
+                f.write("\nMemory Statistics:\n")
+                stats = self.get_memory_stats()
+                for key, value in stats.items():
+                    f.write(f"  {key}: {value}\n")
+            
+            return f"Conversation saved to {filename}"
+            
+        except Exception as e:
+            return f"Error saving conversation: {e}"

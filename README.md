@@ -13,6 +13,7 @@ An intelligent command-line AI agent powered by Groq's Llama 3.3 model with conv
 - **File System Operations** - Directory listing, file reading, and file information retrieval
 - **Hybrid Memory System** - Efficient memory management with recent and important message preservation
 - **Memory Debug Commands** - Built-in commands to monitor memory usage and important message tracking
+- **Conversation Persistence** - Automatic conversation saving to timestamped text files on exit
 - **Retry Logic** - Robust error handling with automatic retry mechanisms
 - **Real-time Tool Monitoring** - Visual indicators showing when tools vs. LLM responses are used
 - **Clean Architecture** - Modular design with separated concerns for maintainability
@@ -62,7 +63,7 @@ An intelligent command-line AI agent powered by Groq's Llama 3.3 model with conv
 
 3. **Start chatting**
    - Type your tasks or questions
-   - Type `exit` or `quit` to stop
+   - Type `exit` or `quit` to stop (automatically saves conversation)
    - Type `memory` to view memory usage statistics
    - Type `important` to see what messages are preserved as important
 
@@ -153,6 +154,7 @@ Task: Hello, what can you help me with?
 Agent: Hello! I'm TaskTrek, an AI assistant that can help you with various tasks...
 
 Task: exit
+Conversation saved to conversation_20250126_143045.txt
 Goodbye!
 ```
 
@@ -289,6 +291,36 @@ TaskTrek provides clear real-time feedback on its decision-making process:
 - `memory` - Display current memory usage statistics including recent/important message counts and estimated token usage
 - `important` - Show summary of messages preserved as important with reasons and previews
 - Real-time memory efficiency monitoring to optimize token usage
+
+### **Conversation Persistence**
+- **Automatic Save on Exit** - When you type `exit` or `quit`, the conversation is automatically saved
+- **Timestamped Files** - Creates files named `conversation_YYYYMMDD_HHMMSS.txt`
+- **Complete History** - Saves all user inputs and agent responses in chronological order
+- **Memory Statistics** - Includes final memory usage stats at the end of each saved conversation
+- **Deduplication** - Removes duplicate messages between recent and important history for clean output
+
+#### **Saved Conversation Format**
+```
+TaskTrek Agent Conversation Log
+========================================
+Session Date: 2025-01-26 14:30:45
+
+User: What is 2 + 2?
+----------------------------------------
+Agent: [TOOL] Used 1 tool(s): calculate: 4
+The result is 4.
+----------------------------------------
+User: exit
+----------------------------------------
+
+Memory Statistics:
+  recent_messages: 4
+  important_messages: 1
+  total_unique_messages: 4
+  estimated_tokens: 156
+  recent_limit: 10
+  important_limit: 5
+```
 
 ## Requirements
 

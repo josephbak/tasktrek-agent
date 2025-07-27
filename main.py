@@ -11,6 +11,9 @@ def main():
     while True:
         user_input = input("Task: ")
         if user_input.strip().lower() in ["exit", "quit"]:
+            # Save conversation before exiting
+            save_result = agent.memory.save_conversation_to_file()
+            print(save_result)
             print("Goodbye!")
             break
         
