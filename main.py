@@ -11,9 +11,8 @@ def main():
     while True:
         user_input = input("Task: ")
         if user_input.strip().lower() in ["exit", "quit"]:
-            # Save conversation before exiting
-            save_result = agent.memory.save_conversation_to_file()
-            print(save_result)
+            # Show session info before exiting
+            print(f"Session saved to: {agent.memory.current_session_file}")
             print("Goodbye!")
             break
         
@@ -27,6 +26,9 @@ def main():
             print("Important Messages:")
             for item in summary:
                 print(f"  {item['reason']}: {item['preview']}")
+            continue
+        elif user_input.strip().lower() == "session":
+            print(f"Current session file: {agent.memory.current_session_file}")
             continue
         
         try:

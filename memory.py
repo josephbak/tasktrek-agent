@@ -1,6 +1,8 @@
 # memory.py
 
 from datetime import datetime
+import json
+import os
 
 class Memory:
     def __init__(self, system_prompt, recent_limit=10, important_limit=5):
@@ -9,6 +11,11 @@ class Memory:
         self.important_history = []   # Key messages worth preserving longer
         self.recent_limit = recent_limit
         self.important_limit = important_limit
+        
+        # Auto-save setup
+        self.conversations_dir = "conversations"
+        self._ensure_conversations_dir()
+        self.current_session_file = self._get_session_filename()
     
     def add_user_message(self, content):
         message = {
@@ -18,6 +25,7 @@ class Memory:
         }
         self.recent_history.append(message)
         self._trim_recent()
+        self._auto_save_message(message)
     
     def add_agent_message(self, content):
         message = {
@@ -35,6 +43,7 @@ class Memory:
             self._trim_important()
         
         self._trim_recent()
+        self._auto_save_message(message)
     
     def _is_important_message(self, content):
         """Determine if a message should be preserved as important"""
@@ -128,6 +137,58 @@ class Memory:
                 "timestamp": msg["timestamp"]
             })
         return summary
+    
+    def _ensure_conversations_dir(self):
+        """Create conversations directory if it doesn't exist"""
+        if not os.path.exists(self.conversations_dir):
+            os.makedirs(self.conversations_dir)
+    
+    def _get_session_filename(self):
+        """Generate filename for current session"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        return os.path.join(self.conversations_dir, f"session_{timestamp}.json")
+    
+    def _auto_save_message(self, message):
+        """Auto-save each message immediately to prevent data loss"""
+        try:
+            # Load existing session data or create new
+            session_data = self._load_or_create_session()
+            
+            # Add new message
+            session_data["messages"].append(message)
+            
+            # Update session metadata
+            session_data["last_updated"] = datetime.now().isoformat()
+            session_data["message_count"] = len(session_data["messages"])
+            
+            # Save back to file
+            with open(self.current_session_file, 'w', encoding='utf-8') as f:
+                json.dump(session_data, f, indent=2, ensure_ascii=False)
+                
+        except Exception as e:
+            # Don't crash the program if save fails, just print warning
+            print(f"Warning: Failed to auto-save message: {e}")
+    
+    def _load_or_create_session(self):
+        """Load existing session file or create new session structure"""
+        if os.path.exists(self.current_session_file):
+            try:
+                with open(self.current_session_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except:
+                pass  # If file is corrupted, create new session
+        
+        # Create new session structure
+        return {
+            "session_info": {
+                "start_time": datetime.now().isoformat(),
+                "agent_version": "TaskTrek v1.0",
+                "session_file": self.current_session_file
+            },
+            "messages": [],
+            "last_updated": datetime.now().isoformat(),
+            "message_count": 0
+        }
     
     def save_conversation_to_file(self, filename=None):
         """Save the entire conversation to a text file"""
